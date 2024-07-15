@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Application</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/script.js' %}" defer></script>
+</head>
+
+<body>
+    <div class="header">
+        <h2>Doc Insights</h2>
+        <button id="uploadBtn">Upload</button>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="pdf_file">Select a PDF file:</label>
+                <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" required>
+                <button class="upload-pdf" type="submit">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>Uploaded Files</h3>
+            <form id="fileSelectionForm" method="post">
+                {% csrf_token %}
+                <ul class="file-list" id="fileList">
+                    {% for file in uploaded_files %}
+                    <li>
+                        <input type="radio" name="selected_file" value="{{ file }}" id="file_{{ forloop.counter }}">
+                        <label for="file_{{ forloop.counter }}">{{ file }}</label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </form>
+        </div>
+
+        <div class="chat-window">
+            <div id="chatArea">
+                {% for item in question_history %}
+                <div class="chat-message">
+                    <div class="user-question"><strong>Question:</strong> {{ item.question }}</div>
+                    <!-- <div class="bot-answer"><strong>Answer:</strong> {{ item.answer }}</div> -->
+                    <div class="bot-answer"><strong>Answer:</strong>
+                        <pre>{{ item.answer }}</pre>
+                    </div>
+                    <br>
+                    <br>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="chat-input">
+                <form id="questionForm" method="post">
+                    {% csrf_token %}
+                    <textarea name="question" id="question" placeholder="Type your question..." required></textarea>
+                    <input type="hidden" name="question_on_selected_file" id="question_on_selected_file">
+                    <button type="submit" class="submitQuestionButton">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="overlay"></div>
+    <div id="loadingIndicator">
+        {% load static %}
+        <img src="{% static 'images/loading.gif' %}" alt="Loading...">
+        <div class="loading-message">Fetching the RAG response from LLM. Please wait..</div>
+    </div>
+</body>
+
+</html>
